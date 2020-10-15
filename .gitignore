@@ -1,0 +1,5 @@
+.env
+foo.py
+__pycache__
+.pytest_cache
+history.txt

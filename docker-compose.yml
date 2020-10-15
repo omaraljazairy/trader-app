@@ -1,0 +1,83 @@
+version: "3.7"
+
+services: 
+  python:
+    build: .
+    container_name: python
+    volumes:
+      - type: bind
+        source: .
+        target: /app
+      - .env:/app/.env
+    command: tail -f /dev/null
+    links:
+      - 'mysql'
+    networks:
+      - backend-network
+    environment: 
+        - DB_USER=${DB_USER}
+        - DB_PASSWORD=${DB_PASSWORD}
+  mysql:
+    container_name: mysql
+    image: mysql:latest
+    ports:
+      - '3307:3306'
+    environment:
+      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD} # dockerpass
+    volumes:
+      - type: volume
+        source: mysql-data
+        target: /var/lib/mysql
+    networks:
+      backend-network:
+        ipv4_address: 172.27.0.3
+  phpmyadmin:
+    container_name: phpmyadmin
+    image: phpmyadmin/phpmyadmin:latest
+    restart: always
+    networks:
+        - backend-network
+    environment:
+      - PMA_HOST=mysql
+      - PMA_USER=${DB_USER}
+      - PMA_PASSWORD=${DB_PASSWORD} # dockerpass
+    ports:
+      - "8081:80"
+    depends_on:
+      - mysql
+  redis:
+    container_name: redis
+    image: "redis:alpine"
+    #command: redis-server --requirepass ${REDIS_PASS}
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis-data:/var/lib/redis
+      - redis.conf:/usr/local/etc/redis/redis.conf
+    environment:
+      - REDIS_REPLICATION_MODE=master
+    networks:
+      backend-network:
+        ipv4_address: 172.27.0.4
+  redis-commander:
+    container_name: redis-commander
+    hostname: redis-commander
+    image: rediscommander/redis-commander:latest
+    restart: always
+    environment:
+    - REDIS_HOSTS=redis
+    ports:
+    - "8082:8081"
+    networks:
+      - backend-network
+
+volumes: 
+    mysql-data:
+    redis-data:
+    redis.conf:  
+networks:
+    backend-network:
+      ipam:
+        driver: default
+        config:
+          - subnet: 172.27.0.0/16

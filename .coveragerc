@@ -1,0 +1,10 @@
+[run]
+source = .
+omit =
+    # omit everything in /conf
+    conf/**
+    # omit some files
+    foo.py
+    .env
+    tests/**
+    *__init__.py

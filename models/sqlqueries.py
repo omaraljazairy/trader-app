@@ -1,0 +1,4 @@
+GET_CURRENT_BALANCE = """select Balance, Asset, CONVERT_TZ(OrderDate,'UTC','Europe/Amsterdam') as OrderDate, Revenue from Trades where Asset = %s order by Id DESC limit 1"""
+SET_BALANCE = """ INSERT INTO Trades (Balance, Revenue, Asset) Values (%s, %s, %s) """
+GET_DAILY_ORDERS = """ SELECT Balance, Asset, CONVERT_TZ(OrderDate,'UTC','Europe/Amsterdam') as OrderDate, Revenue from Trades where Asset = %s and CONVERT_TZ(OrderDate,'UTC','Europe/Amsterdam') >= CONVERT_TZ(CURDATE(),'UTC','Europe/Amsterdam') - INTERVAL %s DAY order by Id ASC """
+GET_DAILY_REVENUE = """ SELECT Date(CONVERT_TZ(OrderDate,'+00:00','Europe/Amsterdam')) as OrderDate, SUM(Revenue) from Trades where Asset = %s and CONVERT_TZ(OrderDate,'+00:00','Europe/Amsterdam') >= CONVERT_TZ(CURDATE(),'+00:00','Europe/Amsterdam') - INTERVAL %s DAY group by 1 order by 1 ASC """
